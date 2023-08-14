@@ -2,6 +2,7 @@ import http.server
 import datetime
 import socketserver
 import mariadb
+import argparse
 import json
 import logging
 
@@ -13,7 +14,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
 
     def __init__(self, *args, **kwargs):
         self.config = self.load_json("config.json")
-        self.secret_data = self.load_json("secret.json")
+        self.secrets = self.load_json("secrets.json")
         super().__init__(*args, **kwargs)
 
     def do_POST(self):
@@ -68,15 +69,15 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
 def insert_data_into_database(timestamp, humidity, temperature):
     try:
         with mariadb.connect(
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT,
-            database=DB_DATABASE,
+            user=self.config["db_user"],
+            password=secrets["db_password"],
+            host=self.config["db_host"],
+            port=self.config["db_port"],
+            database=self.config["db_name"],
         ) as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO Data_ESP8266 (date, humidity, temperature) VALUES (?, ?, ?)",
+                "INSERT INTO {self.config['db_table_name']} (date, humidity, temperature) VALUES (?, ?, ?)",
                 (timestamp, humidity, temperature),
             )
             conn.commit()
@@ -84,6 +85,11 @@ def insert_data_into_database(timestamp, humidity, temperature):
         logging.error("Error connecting to MariaDB: %s", e)
 
 def main():
+    parser = argparse.ArgumentParser(description="HTTP server for receiving sensor data and storing in a database.")
+    parser.add_argument("--port", type=int, default=8080, help="Port number for the HTTP server")
+    args = parser.parse_args()
+
+    PORT = args.port
     logging.basicConfig(level=logging.INFO)
     with socketserver.TCPServer(("", PORT), DataReceiverHandler) as httpd:
         logging.info("Serving at port %s", PORT)
