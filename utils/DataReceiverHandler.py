@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 
+
 class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
     @staticmethod
     def load_json(filename):
@@ -15,7 +16,34 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.config = self.load_json("config.json")
         self.secrets = self.load_json("secrets.json")
+        self.init_logging()
+        self.init_database_connection()
         super().__init__(*args, **kwargs)
+
+    def init_logging(self):
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
+        self.logger = logging.getLogger(__name__)
+
+    def init_database_connection(self):
+        try:
+            self.conn = mariadb.connect(
+                user=self.config["db_user"],
+                password=self.secrets["db_password"],
+                host=self.config["db_host"],
+                port=self.config["db_port"],
+                database=self.config["db_name"],
+                autocommit=False,
+            )
+            self.cur = self.conn.cursor()
+            self.logger.info("Database connection is ready")
+        except mariadb.Error as e:
+            self.logger.error(
+                f"An error occurred while connecting to the database: {e}"
+            )
+            sys.exit(1)
 
     def do_POST(self):
         try:
@@ -36,7 +64,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
 
             now = datetime.datetime.utcnow()
 
-            insert_data_into_database(now, humidity, temperature)
+            self.insert_data_into_database(now, humidity, temperature)
 
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
@@ -61,32 +89,29 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
             <pre>curl -X POST -H "Content-Type: application/json" -d '{{"humidity": 50, "temperature": 20}}' http://{}/</pre>
             </body>
             </html>
-            """.format(self.server.server_address[0])
+            """.format(
+                self.server.server_address[0]
+            )
             self.wfile.write(html.encode("utf-8"))
         else:
             super().do_GET()
 
-def insert_data_into_database(timestamp, humidity, temperature):
-    try:
-        with mariadb.connect(
-            user=self.config["db_user"],
-            password=secrets["db_password"],
-            host=self.config["db_host"],
-            port=self.config["db_port"],
-            database=self.config["db_name"],
-        ) as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO {self.config['db_table_name']} (date, humidity, temperature) VALUES (?, ?, ?)",
-                (timestamp, humidity, temperature),
-            )
-            conn.commit()
-    except mariadb.Error as e:
-        logging.error("Error connecting to MariaDB: %s", e)
+    def insert_data_into_database(self, timestamp, humidity, temperature):
+        query = f"INSERT INTO {self.config['db_table_name']} (date, temperature, humidity) VALUES ('{timestamp}', '{temperature}', '{humidity}')"
+        try:
+            self.cur.execute(query)
+            self.conn.commit()
+        except mariadb.Error as e:
+            logging.error("Error connecting to MariaDB: %s", e)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="HTTP server for receiving sensor data and storing in a database.")
-    parser.add_argument("--port", type=int, default=8080, help="Port number for the HTTP server")
+    parser = argparse.ArgumentParser(
+        description="HTTP server for receiving sensor data and storing in a database."
+    )
+    parser.add_argument(
+        "--port", type=int, default=8080, help="Port number for the HTTP server"
+    )
     args = parser.parse_args()
 
     PORT = args.port
@@ -95,6 +120,6 @@ def main():
         logging.info("Serving at port %s", PORT)
         httpd.serve_forever()
 
+
 if __name__ == "__main__":
     main()
-
