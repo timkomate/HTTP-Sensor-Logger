@@ -19,10 +19,10 @@ The project consists of an HTTP server and a data handler module. The HTTP serve
 
 1. Clone this repository:
 
-   ```sh
-   git clone https://github.com/your-username/your-repo.git
+```git clone https://github.com/your-username/your-repo.git```
 
 2. Install the required dependencies (Python 3.9+):
+
 ```pip install mariadb```
 
 ## Usage
