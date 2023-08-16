@@ -1,7 +1,8 @@
-import argparse 
+import argparse
 import socketserver
 import logging
 from utils.DataReceiverHandler import DataReceiverHandler
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -17,6 +18,7 @@ def main():
     with socketserver.TCPServer(("", PORT), DataReceiverHandler) as httpd:
         logging.info("Serving at port %s", PORT)
         httpd.serve_forever()
+
 
 if __name__ == "__main__":
     main()
