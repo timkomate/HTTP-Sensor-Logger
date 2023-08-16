@@ -10,7 +10,6 @@ This project implements an HTTP server that receives sensor data through POST re
 - [Configuration](#configuration)
 - [Example](#example)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Overview
 
@@ -47,10 +46,12 @@ To post data to the database, use the following command:
 ## Example
 Example POST request to send sensor data:
 
-```{
+```
+{
   "humidity": 50,
   "temperature": 20
-}```
+}
+```
 
 ## Contributing
 
