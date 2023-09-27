@@ -19,7 +19,7 @@ The project consists of an HTTP server and a data handler module. The HTTP serve
 
 1. Clone this repository:
 
-```git clone https://github.com/your-username/your-repo.git```
+```git clone https://github.com/timkomate/HTTP-Sensor-Logger.git```
 
 2. Install the required dependencies (Python 3.9+):
 
