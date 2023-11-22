@@ -13,10 +13,9 @@ def main():
     )
     args = parser.parse_args()
 
-    PORT = args.port
     logging.basicConfig(level=logging.INFO)
-    with socketserver.TCPServer(("", PORT), DataReceiverHandler) as httpd:
-        logging.info("Serving at port %s", PORT)
+    with socketserver.TCPServer(("", args.port), DataReceiverHandler) as httpd:
+        logging.info("Serving at port %s", args.port)
         httpd.serve_forever()
 
 

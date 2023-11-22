@@ -52,10 +52,14 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
             logging.info("Received POST data: %s", post_data)
 
             data = json.loads(post_data)
+            table = data.get("table")
             humidity = data.get("humidity")
             temperature = data.get("temperature")
+            #TODO: Depricate this
+            if table is None:
+                table = "Data_ESP8266"
 
-            if humidity is None or temperature is None:
+            if humidity is None or temperature is None or table is None:
                 self.send_response(400)
                 self.send_header("Content-type", "text/plain")
                 self.end_headers()
@@ -64,7 +68,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
 
             now = datetime.datetime.utcnow()
 
-            self.insert_data_into_database(now, humidity, temperature)
+            self.insert_data_into_database(now, table, humidity, temperature)
 
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
@@ -96,8 +100,8 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
-    def insert_data_into_database(self, timestamp, humidity, temperature):
-        query = f"INSERT INTO {self.config['db_table_name']} (date, temperature, humidity) VALUES ('{timestamp}', '{temperature}', '{humidity}')"
+    def insert_data_into_database(self, table, timestamp, humidity, temperature):
+        query = f"INSERT INTO {table} (date, temperature, humidity) VALUES ('{timestamp}', '{temperature}', '{humidity}')"
         try:
             self.cur.execute(query)
             self.conn.commit()
