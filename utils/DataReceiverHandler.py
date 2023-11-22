@@ -90,7 +90,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
             <body>
             <h1>Post Data to Database</h1>
             <p>To post data to the database, send a POST request to this URL with the data in JSON format:</p>
-            <pre>curl -X POST -H "Content-Type: application/json" -d '{{"humidity": 50, "temperature": 20}}' http://{}/</pre>
+            <pre>curl -X POST -H "Content-Type: application/json" -d '{{"table": "test_data", "humidity": 50, "temperature": 20}}' http://{}/</pre>
             </body>
             </html>
             """.format(

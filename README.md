@@ -36,7 +36,7 @@ Replace 8080 with the desired port number.
 
 To post data to the database, use the following command:
 
-```curl -X POST -H "Content-Type: application/json" -d '{"humidity": 50, "temperature": 20}' http://localhost:8080/```
+```curl -X POST -H "Content-Type: application/json" -d '{"table:" "test_data" "humidity": 50, "temperature": 20}' http://localhost:8080/```
 
 ## Configuration
 `config.json`: Configuration settings for the HTTP server and database connection.
@@ -48,6 +48,7 @@ Example POST request to send sensor data:
 
 ```
 {
+  "table": "test_data"
   "humidity": 50,
   "temperature": 20
 }
