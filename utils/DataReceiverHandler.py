@@ -55,7 +55,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
             table = data.get("table")
             humidity = data.get("humidity")
             temperature = data.get("temperature")
-            #TODO: Depricate this
+            # TODO: Depricate this
             if table is None:
                 table = "Data_ESP8266"
 
@@ -100,7 +100,7 @@ class DataReceiverHandler(http.server.SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
-    def insert_data_into_database(self, table, timestamp, humidity, temperature):
+    def insert_data_into_database(self, timestamp, table, humidity, temperature):
         query = f"INSERT INTO {table} (date, temperature, humidity) VALUES ('{timestamp}', '{temperature}', '{humidity}')"
         try:
             self.cur.execute(query)
